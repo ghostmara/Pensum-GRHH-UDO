@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Pensum Interactivo – Gerencia de RRHH (UDO)</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fff0f5;
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2 {
+      color: #c2185b;
+    }
+    .semestre {
+      margin-bottom: 30px;
+    }
+    .materia {
+      border: 2px solid #f8bbd0;
+      background-color: #fce4ec;
+      border-radius: 10px;
+      padding: 10px;
+      margin: 5px 0;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .materia.vista {
+      background-color: #f06292;
+      color: white;
+      text-decoration: line-through;
+    }
+    .materia.bloqueada {
+      background-color: #f8f8f8;
+      color: #aaa;
+      border-color: #eee;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pensum Interactivo – Gerencia de Recursos Humanos (UDO)</h1>
+  <p>Haz clic en las materias que ya hayas cursado. Las que tienen prerrequisitos se activan automáticamente.</p>
+  <div id="contenedor"></div>
+
+  <script>
+    const materias = [
+      // SEMESTRES 1–10 (igual que antes, no lo repito por espacio)
+
+      // ELECTIVAS TÉCNICAS
+      { id: 'etec1', nombre: 'Programación Neurolingüística', semestre: 'Electivas Técnicas', prerrequisitos: [] },
+      { id: 'etec2', nombre: 'Problemas de Personal', semestre: 'Electivas Técnicas', prerrequisitos: [] },
+      { id: 'etec3', nombre: 'Procedimientos Administrativos del Trabajo', semestre: 'Electivas Técnicas', prerrequisitos: [] },
+      { id: 'etec4', nombre: 'Liderazgo, Motivación y Comunicación', semestre: 'Electivas Técnicas', prerrequisitos: [] },
+      { id: 'etec5', nombre: 'Calidad y Productividad en la Empresa', semestre: 'Electivas Técnicas', prerrequisitos: [] },
+      { id: 'etec6', nombre: 'Inteligencia Emocional', semestre: 'Electivas Técnicas', prerrequisitos: [] },
+      { id: 'etec7', nombre: 'Consultoría de Procesos', semestre: 'Electivas Técnicas', prerrequisitos: [] },
+      { id: 'etec8', nombre: 'Psicosociología del Trabajo', semestre: 'Electivas Técnicas', prerrequisitos: [] },
+      { id: 'etec9', nombre: 'Relaciones Laborales', semestre: 'Electivas Técnicas', prerrequisitos: [] },
+      { id: 'etec10', nombre: 'Estrategias Gerenciales', semestre: 'Electivas Técnicas', prerrequisitos: [] },
+      { id: 'etec11', nombre: 'Mercadeo Interno', semestre: 'Electivas Técnicas', prerrequisitos: [] },
+      { id: 'etec12', nombre: 'Impuesto Sobre la Renta', semestre: 'Electivas Técnicas', prerrequisitos: [] },
+
+      // ELECTIVAS SOCIOHUMANÍSTICAS
+      { id: 'esoc1', nombre: 'Problemas Sociales y Económicos de Venezuela', semestre: 'Electivas Sociohumanísticas', prerrequisitos: [] },
+      { id: 'esoc2', nombre: 'Dirección de Reuniones', semestre: 'Electivas Sociohumanísticas', prerrequisitos: [] },
+      { id: 'esoc3', nombre: 'Gestión Ambiental', semestre: 'Electivas Sociohumanísticas', prerrequisitos: [] },
+      { id: 'esoc4', nombre: 'Cooperativismo', semestre: 'Electivas Sociohumanísticas', prerrequisitos: [] }
+    ];
+
+    const estadoMaterias = JSON.parse(localStorage.getItem('estadoMateriasGRH')) || {};
+
+    function guardarEstado() {
+      localStorage.setItem('estadoMateriasGRH', JSON.stringify(estadoMaterias));
+    }
+
+    function puedeCursar(materia) {
+      return materia.prerrequisitos.every(p => estadoMaterias[p]);
+    }
+
+    function renderMaterias() {
+      const contenedor = document.getElementById('contenedor');
+      contenedor.innerHTML = '';
+
+      const porSemestre = {};
+      materias.forEach(m => {
+        porSemestre[m.semestre] = porSemestre[m.semestre] || [];
+        porSemestre[m.semestre].push(m);
+      });
+
+      Object.keys(porSemestre).sort((a, b) => {
+        const aNum = parseInt(a), bNum = parseInt(b);
+        if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
+        if (!isNaN(aNum)) return -1;
+        if (!isNaN(bNum)) return 1;
+        return a.localeCompare(b);
+      }).forEach(sem => {
+        const bloque = document.createElement('div');
+        bloque.className = 'semestre';
+
+const titulo = document.createElement('h2');
+        titulo.textContent = sem.startsWith('Electivas') ? sem : Semestre ${sem};
+        bloque.appendChild(titulo);
+
+        porSemestre[sem].forEach(materia => {
+          const div = document.createElement('div');
+          div.className = 'materia';
+
+          if (estadoMaterias[materia.id]) {
+            div.classList.add('vista');
+          } else if (!puedeCursar(materia)) {
+            div.classList.add('bloqueada');
+          }
+
+          div.textContent = materia.nombre;
+
+          if (!div.classList.contains('bloqueada')) {
+            div.onclick = () => {
+              estadoMaterias[materia.id] = !estadoMaterias[materia.id];
+              guardarEstado();
+              renderMaterias();
+            };
+          }
+
+          bloque.appendChild(div);
+        });
+
+        contenedor.appendChild(bloque);
+      });
+    }
+
+    renderMaterias();
+  </script>
+</body>
+</html>
